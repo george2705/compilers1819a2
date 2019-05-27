@@ -12,22 +12,21 @@ class ParseRun(Exception):
 class MyParser:
 	def __init__(self):
 		space = plex.Any(" \n\t")
-		string = plex.Str('"') + plex.Rep(plex.AnyBut('"')) + plex.Str('"')
-		dong = plex.Str('!','?','(',')')
+		par = plex.Str('(',')')
 		letter = plex.Range('azAZ')
 		digit = plex.Range('09')
 		name = letter+plex.Rep(letter|digit)
+		bit = plex.Range('01')
+		bits = plex.Rep1(bit)
 		keyword = plex.Str('print','PRINT')
 		space = plex.Any(" \n\t")
-		operator=plex.Str('+','-','*','/','=')
-		floater = plex.Rep(digit)+plex.Str('.')+plex.Rep1(digit)
+		operator=plex.Str('^','&','|','=')
 		self.st = {}
 		self.lexicon = plex.Lexicon([
 			(operator,plex.TEXT),
-			(floater,'FLOAT_TOKEN'),
+			(bits,'BIT_TOKEN'),
 			(keyword,'PRINT'),
-			(string,'STRING_TOKEN'),
-			(dong,plex.TEXT),
+			(par,plex.TEXT),
 			(name,'IDENTIFIER'),
 			(space,plex.IGNORE)
 			])
@@ -43,7 +42,7 @@ class MyParser:
 		if self.la==token:
 			self.la,self.text=self.next_token()
 		else:
-			raise ParseError("perimenw ! ? (")
+			raise ParseError("perimenw (")
 
 	def parse(self,fp):
 		self.create_scanner(fp)
