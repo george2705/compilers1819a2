@@ -9,21 +9,20 @@ class ParseError(Exception):
 class MyParser:
 	def __init__(self):
 		space = plex.Any(" \n\t")
-		string = plex.Str('"') + plex.Rep(plex.AnyBut('"')) + plex.Str('"')
-		dong = plex.Str('!','?','(',')')
+		par = plex.Str('(',')')
 		letter = plex.Range('azAZ')
 		digit = plex.Range('09')
 		name = letter+plex.Rep(letter|digit)
+		bit = plex.Range('01')
+		bits = plex.Rep1(bit)
 		keyword = plex.Str('print','PRINT')
 		space = plex.Any(" \n\t")
-		operator=plex.Str('+','-','*','/','=')
-		floater = plex.Rep(digit)+plex.Str('.')+plex.Rep1(digit)
+		operator=plex.Str('^','&','|','=')
 		self.lexicon = plex.Lexicon([
 			(operator,plex.TEXT),
-			(floater,'FLOAT_TOKEN'),
+			(bits,'BIT_TOKEN'),
 			(keyword,'PRINT'),
-			(string,'STRING_TOKEN'),
-			(dong,plex.TEXT),
+			(par,plex.TEXT),
 			(name,'IDENTIFIER'),
 			(space,plex.IGNORE)
 			])
@@ -39,7 +38,7 @@ class MyParser:
 		if self.la==token:
 			self.la,self.text=self.next_token()
 		else:
-			raise ParseError("perimenw ! ? (")
+			raise ParseError("perimenw (")
 
 	def parse(self,fp):
 		self.create_scanner(fp)
@@ -64,60 +63,61 @@ class MyParser:
 		else:
 			raise ParseError("perimenw IDENTIFIER or PRINT")
 	def expr(self):
-		if self.la=='(' or self.la=='IDENTIFIER' or self.la=='FLOAT_TOKEN':	
+		if self.la=='(' or self.la=='IDENTIFIER' or self.la=='BIT_TOKEN':	
 			self.term()
 			self.term_tail()
 		else:
-			raise ParseError("perimenw ( or IDENTIFIER or FLOAT or )")
+			raise ParseError("perimenw ( or IDENTIFIER or BIT or )")
 	def term_tail(self):
-		if self.la=='+' or self.la=='-':
-			self.addop()
+		if self.la=='^':
+			self.match('^')
 			self.term()
 			self.term_tail()
 		elif self.la=='IDENTIFIER' or self.la=='PRINT' or self.la== None or self.la==')':
 			return
 		else:
-			raise ParseError("perimenw + or -")
+			raise ParseError("perimenw ^")
 	def term(self):
-		if self.la=='(' or self.la=='IDENTIFIER' or self.la=='FLOAT_TOKEN' or self.la==')':	
+		if self.la=='(' or self.la=='IDENTIFIER' or self.la=='BIT_TOKEN' or self.la==')':	
 			self.factor()
 			self.factor_tail()
 		else:
-			raise ParseError("perimenw ( or IDENTIFIER or FLOAT or )")
+			raise ParseError("perimenw ( or IDENTIFIER or BIT or )")
 	def factor_tail(self):
-		if self.la=='*' or self.la=='/':
-			self.multop()
+		if self.la=='|':
+			self.match('|')
 			self.factor()
 			self.factor_tail()
-		elif self.la=='+' or self.la=='-' or self.la=='IDENTIFIER' or self.la=='PRINT' or self.la== None or self.la==')':
+		elif self.la=='^' or self.la=='IDENTIFIER' or self.la=='PRINT' or self.la== None or self.la==')':
 			return
 		else:
-			raise ParseError("perimenw * or /")
+			raise ParseError("perimenw |")
 	def factor(self):
+		if self.la =='(' or self.la =='IDENTIFIER' or self.la == 'BIT_TOKEN':
+			self.atom()
+			self.atom_tail()
+		else:
+			raise ParseError("perimenw IDENTIFIER or BIT_TOKEN or (")
+	def atom_tail(self):
+		if self.la=='&':
+			self.match('&')
+			self.atom()
+			self.atom_tail()
+		elif self.la =='|' or self.la =='^' or self.la =='IDENTIFIER' or self.la =='PRINT' or self.la == None or self.la == ')':
+			return
+		else:
+			raise ParseError("perimenw &")
+	def atom(self):
 		if self.la=='(':
 			self.match('(')
 			self.expr()
 			self.match(')')
-		elif self.la=='IDENTIFIER':
+		elif self.la =='IDENTIFIER':
 			self.match('IDENTIFIER')
-		elif self.la=='FLOAT_TOKEN':
-			self.match('FLOAT_TOKEN')
+		elif self.la == 'BIT_TOKEN':
+			self.match('BIT_TOKEN')
 		else:
-			raise ParseError("perimenw id float or (")
-	def addop(self):
-		if self.la=='+':
-			self.match('+')
-		elif self.la=='-':
-			self.match('-')
-		else:
-			raise ParseError("perimenw + or -")
-	def multop(self):
-		if self.la=='*':
-			self.match('*')
-		elif self.la=='/':
-			self.match('/')
-		else:
-			raise ParseError("perimenei * or /")
+			raise ParseError("perimenei IDENTIFIER or BIT or (")
 
 parser = MyParser()
 with open('test.txt','r') as fp:
