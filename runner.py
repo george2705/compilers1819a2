@@ -1,7 +1,6 @@
 
 import plex
 
-
 # ... συμπληρώστε τον κώδικά σας για τον συντακτικό αναλυτή - διερμηνευτή της γλώσσας ...
 class ParseError(Exception):
 	pass
@@ -70,7 +69,7 @@ class MyParser:
 		else:
 			raise ParseError("perimenw IDENTIFIER or PRINT")
 	def expr(self):
-		if self.la=='(' or self.la=='IDENTIFIER' or self.la=='FLOAT_TOKEN':	
+		if self.la=='(' or self.la=='IDENTIFIER' or self.la=='BIT_TOKEN':	
 			t=self.term()
 			while self.la== '^':
 				self.match('^')
@@ -95,7 +94,7 @@ class MyParser:
 				print(self.la)
 				raise ParseRun("perimenw |")
 		else:
-			raise ParseError("perimenw IDENTIFIER or BIT_TOKEN or )")
+			raise ParseError("perimenw ( or IDENTIFIER or BIT_TOKEN or )")
 	def factor(self):
 		if self.la=='(' or self.la == 'IDENTIFIER' or self.la == 'BIT_TOKEN':
 			t = self.atom()
