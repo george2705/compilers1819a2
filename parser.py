@@ -1,7 +1,6 @@
 
 import plex
 
-
 # ... συμπληρώστε τον κώδικά σας για τον συντακτικό αναλυτή - αναγνωριστή της γλώσσας ...
 class ParseError(Exception):
 	pass
@@ -78,11 +77,11 @@ class MyParser:
 		else:
 			raise ParseError("perimenw ^")
 	def term(self):
-		if self.la=='(' or self.la=='IDENTIFIER' or self.la=='BIT_TOKEN' or self.la==')':	
+		if self.la=='(' or self.la=='IDENTIFIER' or self.la=='BIT_TOKEN':	
 			self.factor()
 			self.factor_tail()
 		else:
-			raise ParseError("perimenw ( or IDENTIFIER or BIT or )")
+			raise ParseError("perimenw ( or IDENTIFIER or )")
 	def factor_tail(self):
 		if self.la=='|':
 			self.match('|')
