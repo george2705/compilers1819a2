@@ -98,7 +98,7 @@ class MyParser:
 	def factor(self):
 		if self.la=='(' or self.la == 'IDENTIFIER' or self.la == 'BIT_TOKEN':
 			t = self.atom()
-			while self.la == '&'
+			while self.la == '&':
 				self.match('&')
 				t2 = self.atom()
 				t &= t2
